@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="theme-color" content="#05070d"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Brendon OS"/>
+  <title>Brendon OS</title>
+  <link rel="manifest" href="./manifest.json"/>
+  <style>
+    :root{
+      --bg:#05070d;
+      --bg2:#090d16;
+      --card:#101622;
+      --card2:#141b29;
+      --stroke:rgba(255,255,255,.095);
+      --stroke2:rgba(255,255,255,.16);
+      --text:#f7f8fb;
+      --muted:#9aa4b5;
+      --muted2:#697386;
+      --accent:#7dd3fc;
+      --accent2:#a78bfa;
+      --good:#34d399;
+      --warn:#fbbf24;
+      --bad:#fb7185;
+      --shadow:0 18px 60px rgba(0,0,0,.42);
+      --radius:22px;
+      --safeTop: env(safe-area-inset-top, 0px);
+      --safeBottom: env(safe-area-inset-bottom, 0px);
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+    body{
+      min-height:100vh;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(125,211,252,.16), transparent 34%),
+        radial-gradient(circle at 95% 10%, rgba(167,139,250,.14), transparent 32%),
+        linear-gradient(180deg,#05070d 0%,#080b13 45%,#05070d 100%);
+      overflow:hidden;
+    }
+    button,input,select,textarea{font:inherit}
+    button{border:0}
+    .app{
+      height:100vh;
+      display:flex;
+      flex-direction:column;
+      max-width:520px;
+      margin:0 auto;
+      position:relative;
+      background:linear-gradient(180deg,rgba(255,255,255,.015),rgba(255,255,255,0));
+      border-left:1px solid rgba(255,255,255,.04);
+      border-right:1px solid rgba(255,255,255,.04);
+    }
+    .topbar{
+      padding:calc(14px + var(--safeTop)) 18px 10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .brand{display:flex;flex-direction:column;gap:2px}
+    .brand h1{font-size:24px;line-height:1;margin:0;letter-spacing:-.04em}
+    .brand p{font-size:12px;color:var(--muted);margin:0}
+    .pill{
+      padding:9px 12px;border:1px solid var(--stroke);border-radius:999px;
+      background:rgba(255,255,255,.05);color:var(--muted);font-size:12px;
+      white-space:nowrap;
+    }
+    main{
+      flex:1;overflow:auto;padding:0 14px 98px;
+      scrollbar-width:none;
+    }
+    main::-webkit-scrollbar{display:none}
+    .view{display:none;animation:fade .18s ease both}
+    .view.active{display:block}
+    @keyframes fade{from{opacity:.55;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+    .hero{
+      margin:8px 0 12px;padding:18px;border-radius:30px;
+      border:1px solid var(--stroke);
+      background:
+        linear-gradient(135deg,rgba(125,211,252,.17),rgba(167,139,250,.08) 45%,rgba(255,255,255,.04)),
+        rgba(16,22,34,.78);
+      box-shadow:var(--shadow);
+      position:relative;
+      overflow:hidden;
+    }
+    .hero:after{
+      content:"";position:absolute;inset:auto -50px -70px auto;width:190px;height:190px;border-radius:50%;
+      background:rgba(125,211,252,.10);filter:blur(8px);
+    }
+    .kicker{font-size:12px;color:var(--accent);font-weight:800;text-transform:uppercase;letter-spacing:.12em;margin-bottom:7px}
+    .hero h2{font-size:28px;line-height:1.04;letter-spacing:-.06em;margin:0 0 9px}
+    .hero p{margin:0;color:var(--muted);font-size:14px;line-height:1.45}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .card{
+      padding:14px;border-radius:var(--radius);background:rgba(16,22,34,.82);
+      border:1px solid var(--stroke);box-shadow:0 10px 32px rgba(0,0,0,.24);
+    }
+    .card h3{font-size:15px;margin:0 0 10px;letter-spacing:-.02em}
+    .metric{
+      display:flex;flex-direction:column;gap:3px;min-height:96px;justify-content:center;
+      background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));
+    }
+    .metric .num{font-size:34px;font-weight:900;letter-spacing:-.06em}
+    .metric .label{font-size:12px;color:var(--muted)}
+    .metric .hint{font-size:11px;color:var(--muted2)}
+    .section-title{
+      display:flex;align-items:center;justify-content:space-between;margin:18px 4px 9px;
+    }
+    .section-title h2{font-size:18px;margin:0;letter-spacing:-.04em}
+    .section-title span{font-size:12px;color:var(--muted)}
+    .list{display:flex;flex-direction:column;gap:9px}
+    .task{
+      display:flex;align-items:center;gap:10px;padding:12px;border-radius:18px;
+      background:rgba(255,255,255,.045);border:1px solid var(--stroke);
+    }
+    .task.done{opacity:.72}
+    .task.done .task-title{text-decoration:line-through;color:var(--muted)}
+    .check{
+      width:26px;height:26px;border-radius:9px;border:1px solid var(--stroke2);
+      background:rgba(255,255,255,.05);display:grid;place-items:center;flex:0 0 auto;
+      color:transparent;font-weight:900;
+    }
+    .task.done .check{background:rgba(52,211,153,.16);border-color:rgba(52,211,153,.38);color:var(--good)}
+    .task-main{flex:1;min-width:0}
+    .task-title{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .task-sub{font-size:12px;color:var(--muted);margin-top:2px}
+    .smallbtn,.primary,.danger,.ghost{
+      border-radius:15px;padding:11px 13px;color:var(--text);background:rgba(255,255,255,.07);
+      border:1px solid var(--stroke);font-weight:800;font-size:13px;
+    }
+    .primary{
+      background:linear-gradient(135deg,rgba(125,211,252,.95),rgba(167,139,250,.92));
+      color:#061018;border:0;box-shadow:0 14px 32px rgba(125,211,252,.18);
+    }
+    .danger{background:rgba(251,113,133,.12);border-color:rgba(251,113,133,.30);color:#fecdd3}
+    .ghost{background:transparent}
+    .row{display:flex;gap:9px;align-items:center}
+    .row > *{flex:1}
+    input,select,textarea{
+      width:100%;background:rgba(255,255,255,.055);border:1px solid var(--stroke);color:var(--text);
+      border-radius:16px;padding:12px;outline:none;
+    }
+    input::placeholder,textarea::placeholder{color:var(--muted2)}
+    textarea{resize:vertical;min-height:86px}
+    .form{display:flex;flex-direction:column;gap:10px}
+    .muted{color:var(--muted);font-size:13px;line-height:1.45}
+    .tiny{font-size:11px;color:var(--muted2)}
+    .day-card{padding:13px;border-radius:20px;border:1px solid var(--stroke);background:rgba(255,255,255,.045)}
+    .day-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+    .day-top b{font-size:15px}
+    .tag{font-size:11px;color:var(--accent);background:rgba(125,211,252,.1);border:1px solid rgba(125,211,252,.18);padding:6px 8px;border-radius:999px;white-space:nowrap}
+    .edit-area{display:none;margin-top:11px}
+    .day-card.open .edit-area{display:block}
+    .progress{
+      height:9px;background:rgba(255,255,255,.07);border-radius:999px;overflow:hidden;border:1px solid var(--stroke);
+    }
+    .bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:999px;width:0%}
+    .circle-wrap{display:flex;align-items:center;justify-content:center;margin:6px 0 2px}
+    .ring{
+      width:132px;height:132px;border-radius:50%;display:grid;place-items:center;
+      background:conic-gradient(var(--accent) 0deg, rgba(255,255,255,.08) 0deg);
+      position:relative;box-shadow:0 20px 60px rgba(125,211,252,.08);
+    }
+    .ring:before{content:"";position:absolute;inset:10px;border-radius:50%;background:#0b101a;border:1px solid var(--stroke)}
+    .ring-inner{position:relative;text-align:center}
+    .ring-inner b{display:block;font-size:33px;letter-spacing:-.06em}
+    .ring-inner span{font-size:11px;color:var(--muted);font-weight:700}
+    .bottomnav{
+      position:absolute;left:0;right:0;bottom:0;padding:8px 10px calc(8px + var(--safeBottom));
+      background:rgba(5,7,13,.86);backdrop-filter:blur(22px);border-top:1px solid var(--stroke);
+      display:grid;grid-template-columns:repeat(7,1fr);gap:3px;
+    }
+    .navbtn{
+      min-width:0;background:transparent;color:var(--muted2);border-radius:16px;padding:8px 2px 7px;
+      display:flex;flex-direction:column;align-items:center;gap:3px;font-size:9px;font-weight:800;
+    }
+    .navbtn .icon{font-size:18px;line-height:1}
+    .navbtn.active{color:var(--text);background:rgba(255,255,255,.07)}
+    .modal{
+      position:fixed;inset:0;background:rgba(0,0,0,.56);display:none;align-items:flex-end;justify-content:center;z-index:10;
+      padding:16px;
+    }
+    .modal.open{display:flex}
+    .sheet{
+      width:min(520px,100%);background:#0b101a;border:1px solid var(--stroke2);border-radius:28px;padding:16px;
+      box-shadow:0 30px 90px rgba(0,0,0,.55);max-height:88vh;overflow:auto;
+    }
+    .sheet h2{margin:3px 0 12px;font-size:21px;letter-spacing:-.04em}
+    .empty{padding:22px;border:1px dashed var(--stroke2);border-radius:20px;color:var(--muted);text-align:center;background:rgba(255,255,255,.03)}
+    .badge-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .badge{padding:15px;border-radius:20px;border:1px solid var(--stroke);background:rgba(255,255,255,.04);opacity:.55}
+    .badge.unlocked{opacity:1;background:linear-gradient(135deg,rgba(251,191,36,.12),rgba(125,211,252,.07))}
+    .badge .emoji{font-size:28px;margin-bottom:6px}
+    .badge b{display:block;font-size:14px}
+    .badge span{font-size:12px;color:var(--muted)}
+    .toast{
+      position:fixed;left:50%;bottom:92px;transform:translateX(-50%) translateY(20px);
+      background:rgba(247,248,251,.92);color:#05070d;padding:11px 14px;border-radius:999px;font-weight:900;
+      font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:20;box-shadow:0 20px 45px rgba(0,0,0,.32)
+    }
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    @media (min-width:700px){
+      body{overflow:auto}
+      .app{height:auto;min-height:100vh}
+      main{padding-bottom:110px}
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <h1 id="brandName">Brendon OS</h1>
+      <p id="brandTag">Run Your Life Like a System.</p>
+    </div>
+    <div class="pill" id="datePill">Today</div>
+  </header>
+
+  <main>
+    <section class="view active" id="dashboard">
+      <div class="hero">
+        <div class="kicker" id="todayKicker">Today</div>
+        <h2 id="todayTitle">Loading system...</h2>
+        <p id="todayFocus">Your daily command centre is loading.</p>
+      </div>
+
+      <div class="card">
+        <div class="circle-wrap">
+          <div class="ring" id="accountRing">
+            <div class="ring-inner">
+              <b id="accountabilityNum">0%</b>
+              <span>ACCOUNTABILITY</span>
+            </div>
+          </div>
+        </div>
+        <div class="progress" aria-label="Routine completion"><div class="bar" id="routineBar"></div></div>
+        <p class="muted" style="margin:10px 0 0" id="routineMeta">0 of 0 routine items complete.</p>
+      </div>
+
+      <div class="grid2" style="margin-top:10px">
+        <div class="card metric">
+          <div class="num" id="streakNum">0</div>
+          <div class="label">Current streak</div>
+          <div class="hint">Perfect days in a row</div>
+        </div>
+        <div class="card metric">
+          <div class="num" id="nextReminder">—</div>
+          <div class="label">Next reminder</div>
+          <div class="hint" id="reminderHint">Today</div>
+        </div>
+      </div>
+
+      <div class="section-title">
+        <h2>Top 3 Non‑Negotiables</h2>
+        <span>Must win</span>
+      </div>
+      <div class="list" id="nonNegList"></div>
+
+      <div class="section-title">
+        <h2>Today's Checklist</h2>
+        <span id="checkCount">0 items</span>
+      </div>
+      <div class="list" id="todayChecklist"></div>
+
+      <div class="section-title">
+        <h2>Today’s Win</h2>
+        <span>Review loop</span>
+      </div>
+      <div class="card">
+        <textarea id="dailyWin" placeholder="What is today’s win?"></textarea>
+        <div class="row" style="margin-top:10px">
+          <button class="primary" onclick="saveDailyWin()">Save Win</button>
+          <button class="ghost" onclick="openReview()">Daily Review</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="routine">
+      <div class="hero">
+        <div class="kicker">Weekly Planner</div>
+        <h2>Build the week before it builds you.</h2>
+        <p>Edit each day’s focus, checklist, reminders, money task, body task and non‑negotiables.</p>
+      </div>
+      <div class="list" id="routineDays"></div>
+    </section>
+
+    <section class="view" id="goals">
+      <div class="hero">
+        <div class="kicker">Goals</div>
+        <h2>Targets that compound.</h2>
+        <p>Track the work that changes your life, not just busy tasks.</p>
+      </div>
+      <button class="primary" onclick="openGoalModal()">+ Add Goal</button>
+      <div class="section-title"><h2>Active Goals</h2><span id="goalCount">0</span></div>
+      <div class="list" id="goalList"></div>
+    </section>
+
+    <section class="view" id="body">
+      <div class="hero">
+        <div class="kicker">Body</div>
+        <h2>Energy is the operating system.</h2>
+        <p>Track weight, gym, sleep and recovery without overcomplicating it.</p>
+      </div>
+      <div class="card form">
+        <div class="row">
+          <input id="bodyWeight" type="number" inputmode="decimal" placeholder="Weight kg"/>
+          <input id="sleepHours" type="number" inputmode="decimal" placeholder="Sleep hrs"/>
+        </div>
+        <div class="row">
+          <select id="gymDone"><option value="yes">Gym done</option><option value="no">No gym</option></select>
+          <input id="recoveryScore" type="number" min="0" max="100" inputmode="numeric" placeholder="Recovery %"/>
+        </div>
+        <button class="primary" onclick="addBodyEntry()">Save Body Entry</button>
+      </div>
+      <div class="section-title"><h2>Last 7 Entries</h2><span>Body log</span></div>
+      <div class="list" id="bodyLog"></div>
+    </section>
+
+    <section class="view" id="money">
+      <div class="hero">
+        <div class="kicker">Money</div>
+        <h2>Every dollar gets a job.</h2>
+        <p>Simple debt and savings visibility. No fluff.</p>
+      </div>
+      <div class="grid2">
+        <div class="card metric"><div class="num" id="totalDebt">$0</div><div class="label">Total debt</div><div class="hint">Outstanding balance</div></div>
+        <div class="card metric"><div class="num" id="totalMin">$0</div><div class="label">Min payments</div><div class="hint">Monthly estimate</div></div>
+      </div>
+      <div class="section-title"><h2>Debts</h2><button class="smallbtn" onclick="openDebtModal()">+ Add</button></div>
+      <div class="list" id="debtList"></div>
+
+      <div class="section-title"><h2>Savings Goal</h2><span id="savingsPct">0%</span></div>
+      <div class="card form">
+        <input id="savingsName" placeholder="Savings goal name"/>
+        <div class="row">
+          <input id="savingsCurrent" type="number" inputmode="decimal" placeholder="Current $"/>
+          <input id="savingsTarget" type="number" inputmode="decimal" placeholder="Target $"/>
+        </div>
+        <div class="progress"><div class="bar" id="savingsBar"></div></div>
+        <button class="primary" onclick="saveSavings()">Save Savings Goal</button>
+      </div>
+    </section>
+
+    <section class="view" id="achievements">
+      <div class="hero">
+        <div class="kicker">Achievements</div>
+        <h2>Proof you’re becoming different.</h2>
+        <p>Your streaks, perfect days and completion history.</p>
+      </div>
+      <div class="grid2">
+        <div class="card metric"><div class="num" id="bestStreak">0</div><div class="label">Best streak</div><div class="hint">All time</div></div>
+        <div class="card metric"><div class="num" id="perfectDays">0</div><div class="label">Perfect days</div><div class="hint">100% days</div></div>
+        <div class="card metric"><div class="num" id="totalCompleted">0</div><div class="label">Items completed</div><div class="hint">All time</div></div>
+        <div class="card metric"><div class="num" id="weeklyAvg">0%</div><div class="label">Weekly average</div><div class="hint">Last 7 days</div></div>
+      </div>
+      <div class="section-title"><h2>Streak Badges</h2><span>Unlocked</span></div>
+      <div class="badge-grid" id="badges"></div>
+    </section>
+
+    <section class="view" id="settings">
+      <div class="hero">
+        <div class="kicker">Settings</div>
+        <h2>Control the system.</h2>
+        <p>Export, import, reset and rename your operating system.</p>
+      </div>
+      <div class="card form">
+        <input id="settingsName" placeholder="App name"/>
+        <input id="settingsTag" placeholder="Tagline"/>
+        <button class="primary" onclick="saveBrand()">Save Branding</button>
+      </div>
+      <div class="section-title"><h2>Data</h2><span>Local only</span></div>
+      <div class="card form">
+        <button class="smallbtn" onclick="exportData()">Export JSON</button>
+        <textarea id="importBox" placeholder="Paste exported JSON here"></textarea>
+        <button class="smallbtn" onclick="importData()">Import JSON</button>
+        <button class="danger" onclick="resetAll()">Reset All Data</button>
+        <p class="tiny">This version stores everything on this device/browser only. No login. No cloud. No monthly cost.</p>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottomnav" aria-label="Main navigation">
+    <button class="navbtn active" onclick="showView('dashboard', this)"><span class="icon">▣</span>Dash</button>
+    <button class="navbtn" onclick="showView('routine', this)"><span class="icon">☑</span>Routine</button>
+    <button class="navbtn" onclick="showView('goals', this)"><span class="icon">◎</span>Goals</button>
+    <button class="navbtn" onclick="showView('body', this)"><span class="icon">◉</span>Body</button>
+    <button class="navbtn" onclick="showView('money', this)"><span class="icon">$</span>Money</button>
+    <button class="navbtn" onclick="showView('achievements', this)"><span class="icon">◆</span>Wins</button>
+    <button class="navbtn" onclick="showView('settings', this)"><span class="icon">⚙</span>Set</button>
+  </nav>
+</div>
+
+<div class="modal" id="modal">
+  <div class="sheet" id="sheet"></div>
+</div>
+<div class="toast" id="toast">Saved</div>
+
+<script>
+const KEY = "brendon_os_v1";
+const todayKey = () => new Date().toISOString().slice(0,10);
+const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const money = n => "$" + Number(n || 0).toLocaleString(undefined,{maximumFractionDigits:0});
+
+function defaultState(){
+  return {
+    brand:{name:"Brendon OS",tagline:"Run Your Life Like a System."},
+    weekly:[
+      {day:"Monday",type:"Weekly Reset Day",focus:"Organise week, money review, clean space, set top goals.",wake:"06:30",sleep:"22:00",checklist:["Make bed and clean space","Review money and bills","Set top 3 priorities","Plan gym/work blocks","Complete night review"],nonNeg:["No impulse spending","Clean room reset","Plan the week"],reminders:["08:00 Weekly setup","12:30 Money check","20:00 Daily review"],recovery:"Hydrate, stretch, early sleep.",moneyTask:"Review bills, debts, and this week’s income.",bodyTask:"Light gym or recovery walk."},
+      {day:"Tuesday",type:"Build Day",focus:"Skill building, income tasks, gym.",wake:"06:30",sleep:"22:15",checklist:["Morning reset","Skill block 45 min","Income action","Gym completed","Night review"],nonNeg:["Skill block","Gym","One income action"],reminders:["07:00 Start system","13:00 Income action","20:30 Review"],recovery:"Protein, water, limit scrolling.",moneyTask:"Find or complete one paid task.",bodyTask:"Strength session."},
+      {day:"Wednesday",type:"Money Day",focus:"Bills, debt tracker, income actions, no impulse spending.",wake:"06:30",sleep:"22:15",checklist:["Check bank balances","Update debt tracker","No impulse spend day","Apply/quote/earn action","Night review"],nonNeg:["No gambling","No impulse spending","One income move"],reminders:["08:00 Bank check","15:00 Income push","20:00 Money review"],recovery:"Keep caffeine controlled. Sleep matters.",moneyTask:"Update every balance and payment.",bodyTask:"Gym or 30 min walk."},
+      {day:"Thursday",type:"Body Day",focus:"Gym, recovery, sleep, nutrition.",wake:"06:30",sleep:"22:00",checklist:["Weigh in","Gym completed","Protein target","Recovery action","Night review"],nonNeg:["Gym","Protein","Sleep target"],reminders:["07:00 Weigh in","17:00 Gym","21:00 Wind down"],recovery:"Stretch, magnesium/relax routine if suitable, early bed.",moneyTask:"No unnecessary spending.",bodyTask:"Main gym session."},
+      {day:"Friday",type:"Execution Day",focus:"Finish outstanding tasks and lock in wins.",wake:"06:30",sleep:"22:45",checklist:["List unfinished tasks","Finish top priority","Message/call needed people","Gym or walk","Weekly win note"],nonNeg:["Finish one hard thing","No blowout spending","Review win"],reminders:["08:00 Execution list","14:00 Finish hard thing","20:00 Weekly win"],recovery:"Don’t sacrifice sleep for chaos.",moneyTask:"Chase invoice/job/payment or reduce one expense.",bodyTask:"Gym or conditioning."},
+      {day:"Saturday",type:"Reset + Social Day",focus:"Clean, recover, connect, light planning.",wake:"08:00",sleep:"23:00",checklist:["Clean space","Laundry/reset","Do something social or outdoors","Light money check","Night review"],nonNeg:["Clean space","No reckless spending","Recovery"],reminders:["10:00 Reset block","16:00 Connect","21:00 Review"],recovery:"Walk, sun, food, sleep.",moneyTask:"Set weekend spending cap.",bodyTask:"Walk/stretch/light gym."},
+      {day:"Sunday",type:"Review Day",focus:"Weekly review, accountability score, prepare Monday.",wake:"08:00",sleep:"22:00",checklist:["Review week","Update achievements","Plan Monday","Prepare clothes/food","Early night"],nonNeg:["Weekly review","Plan Monday","Early sleep"],reminders:["11:00 Weekly review","18:00 Prepare Monday","21:00 Wind down"],recovery:"Reset nervous system. Low chaos.",moneyTask:"Plan payments and spending for next week.",bodyTask:"Recovery walk and mobility."}
+    ],
+    taskStatus:{},
+    wins:{},
+    reviews:{},
+    goals:[],
+    body:[],
+    debts:[
+      {id:id(),name:"Car loan",balance:48000,min:946,rate:9},
+      {id:id(),name:"Personal loan 1",balance:10000,min:250,rate:2},
+      {id:id(),name:"Personal loan 2",balance:20000,min:300,rate:3}
+    ],
+    savings:{name:"Emergency Fund",current:0,target:1000},
+    stats:{bestStreak:0,perfectDays:0,totalCompleted:0,lastCompletion:{}}
+  };
+}
+
+function id(){return Math.random().toString(36).slice(2,10)}
+function load(){
+  try { return JSON.parse(localStorage.getItem(KEY)) || defaultState(); }
+  catch(e){ return defaultState(); }
+}
+let state = load();
+function save(){ localStorage.setItem(KEY, JSON.stringify(state)); renderAll(); }
+
+function todayPlan(){
+  const d = days[new Date().getDay()];
+  return state.weekly.find(x=>x.day===d) || state.weekly[0];
+}
+function statusKey(day, i){ return `${todayKey()}_${day}_${i}`; }
+function isDone(day,i){ return !!state.taskStatus[statusKey(day,i)]; }
+function setDone(day,i,val){
+  const k = statusKey(day,i);
+  const was = !!state.taskStatus[k];
+  if(val) state.taskStatus[k] = true; else delete state.taskStatus[k];
+  if(val && !was) state.stats.totalCompleted = (state.stats.totalCompleted||0)+1;
+  save();
+}
+function completionForDate(dateStr){
+  const d = new Date(dateStr + "T12:00:00");
+  const day = days[d.getDay()];
+  const plan = state.weekly.find(x=>x.day===day);
+  if(!plan) return 0;
+  const total = plan.checklist.length;
+  if(!total) return 0;
+  const done = plan.checklist.filter((_,i)=>state.taskStatus[`${dateStr}_${day}_${i}`]).length;
+  return Math.round(done/total*100);
+}
+function todayCompletion(){
+  const p = todayPlan();
+  const total = p.checklist.length;
+  const done = p.checklist.filter((_,i)=>isDone(p.day,i)).length;
+  return {done,total,pct: total ? Math.round(done/total*100) : 0};
+}
+function updateStats(){
+  const c = todayCompletion();
+  state.stats.lastCompletion[todayKey()] = c.pct;
+  if(c.pct===100 && !state.stats.perfectMarkedToday){
+    // marked in daily review to avoid accidental count
+  }
+  let streak=0;
+  for(let i=0;i<365;i++){
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const key = d.toISOString().slice(0,10);
+    const pct = completionForDate(key);
+    if(pct===100) streak++; else break;
+  }
+  state.stats.currentStreak = streak;
+  state.stats.bestStreak = Math.max(state.stats.bestStreak||0, streak);
+}
+function accountability(){
+  const c = todayCompletion();
+  const win = (state.wins[todayKey()]||"").trim() ? 10 : 0;
+  return Math.min(100, Math.round(c.pct*0.9 + win));
+}
+function nextReminder(plan){
+  const now = new Date();
+  const cur = now.getHours()*60 + now.getMinutes();
+  for(const r of plan.reminders || []){
+    const m = String(r).match(/(\d{1,2}):(\d{2})/);
+    if(m){
+      const mins = Number(m[1])*60 + Number(m[2]);
+      if(mins >= cur) return r;
+    }
+  }
+  return (plan.reminders && plan.reminders[0]) || "Review";
+}
+
+function renderDashboard(){
+  updateStats();
+  const p = todayPlan();
+  const c = todayCompletion();
+  const acc = accountability();
+  document.getElementById("todayKicker").textContent = p.day.toUpperCase();
+  document.getElementById("todayTitle").textContent = `Today is ${p.day} — ${p.type}`;
+  document.getElementById("todayFocus").textContent = p.focus;
+  document.getElementById("accountabilityNum").textContent = `${acc}%`;
+  document.getElementById("accountRing").style.background = `conic-gradient(var(--accent) ${acc*3.6}deg, rgba(255,255,255,.08) 0deg)`;
+  document.getElementById("routineBar").style.width = `${c.pct}%`;
+  document.getElementById("routineMeta").textContent = `${c.done} of ${c.total} routine items complete.`;
+  document.getElementById("checkCount").textContent = `${c.done}/${c.total}`;
+  document.getElementById("streakNum").textContent = state.stats.currentStreak || 0;
+  const nr = nextReminder(p);
+  document.getElementById("nextReminder").textContent = nr.split(" ")[0] || "—";
+  document.getElementById("reminderHint").textContent = nr.replace((nr.split(" ")[0]||""),"").trim() || "Today";
+  document.getElementById("dailyWin").value = state.wins[todayKey()] || "";
+
+  document.getElementById("nonNegList").innerHTML = (p.nonNeg||[]).slice(0,3).map(x=>`
+    <div class="task"><div class="check" style="color:var(--accent)">!</div><div class="task-main"><div class="task-title">${esc(x)}</div><div class="task-sub">Non-negotiable</div></div></div>
+  `).join("");
+
+  document.getElementById("todayChecklist").innerHTML = p.checklist.map((x,i)=>`
+    <div class="task ${isDone(p.day,i)?"done":""}" onclick="setDone('${p.day}',${i},${!isDone(p.day,i)})">
+      <div class="check">✓</div><div class="task-main"><div class="task-title">${esc(x)}</div><div class="task-sub">${p.type}</div></div>
+    </div>
+  `).join("") || `<div class="empty">No routine items yet.</div>`;
+}
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]))}
+
+function renderRoutine(){
+  document.getElementById("routineDays").innerHTML = state.weekly.map((p,idx)=>`
+    <div class="day-card" id="day-${idx}">
+      <div class="day-top" onclick="toggleDay(${idx})">
+        <div><b>${p.day}</b><p class="muted" style="margin:4px 0 0">${esc(p.focus)}</p></div>
+        <span class="tag">${esc(p.type)}</span>
+      </div>
+      <div class="edit-area form">
+        <input value="${esc(p.type)}" onchange="state.weekly[${idx}].type=this.value; save()" placeholder="Day type"/>
+        <textarea onchange="state.weekly[${idx}].focus=this.value; save()" placeholder="Main focus">${esc(p.focus)}</textarea>
+        <div class="row">
+          <input value="${esc(p.wake)}" onchange="state.weekly[${idx}].wake=this.value; save()" placeholder="Wake target"/>
+          <input value="${esc(p.sleep)}" onchange="state.weekly[${idx}].sleep=this.value; save()" placeholder="Sleep target"/>
+        </div>
+        <input value="${esc(p.moneyTask)}" onchange="state.weekly[${idx}].moneyTask=this.value; save()" placeholder="Money task"/>
+        <input value="${esc(p.bodyTask)}" onchange="state.weekly[${idx}].bodyTask=this.value; save()" placeholder="Body task"/>
+        <textarea onchange="state.weekly[${idx}].checklist=lines(this.value); save()" placeholder="Checklist, one per line">${esc((p.checklist||[]).join("\n"))}</textarea>
+        <textarea onchange="state.weekly[${idx}].nonNeg=lines(this.value); save()" placeholder="Non-negotiables, one per line">${esc((p.nonNeg||[]).join("\n"))}</textarea>
+        <textarea onchange="state.weekly[${idx}].reminders=lines(this.value); save()" placeholder="Reminders, one per line">${esc((p.reminders||[]).join("\n"))}</textarea>
+      </div>
+    </div>
+  `).join("");
+}
+function lines(v){return String(v).split("\n").map(x=>x.trim()).filter(Boolean)}
+function toggleDay(i){document.getElementById("day-"+i).classList.toggle("open")}
+
+function renderGoals(){
+  document.getElementById("goalCount").textContent = state.goals.length;
+  document.getElementById("goalList").innerHTML = state.goals.map(g=>`
+    <div class="card">
+      <div class="day-top">
+        <div><h3 style="margin:0">${esc(g.title)}</h3><p class="muted" style="margin:5px 0 0">${esc(g.category)} • Priority ${esc(g.priority)} • ${esc(g.date || "No date")}</p></div>
+        <button class="smallbtn" onclick="deleteGoal('${g.id}')">Delete</button>
+      </div>
+      <div class="progress" style="margin-top:12px"><div class="bar" style="width:${Number(g.progress||0)}%"></div></div>
+      <p class="tiny">${Number(g.progress||0)}% complete</p>
+    </div>
+  `).join("") || `<div class="empty">No goals yet. Add one target worth chasing.</div>`;
+}
+function openGoalModal(){
+  sheet(`
+    <h2>Add Goal</h2>
+    <div class="form">
+      <input id="gTitle" placeholder="Goal title"/>
+      <select id="gCat"><option>Money</option><option>Body</option><option>Work</option><option>Mind</option><option>Life</option></select>
+      <input id="gDate" type="date"/>
+      <select id="gPriority"><option>High</option><option>Medium</option><option>Low</option></select>
+      <input id="gProgress" type="number" min="0" max="100" placeholder="Progress %"/>
+      <button class="primary" onclick="addGoal()">Save Goal</button>
+      <button class="ghost" onclick="closeModal()">Cancel</button>
+    </div>
+  `);
+}
+function addGoal(){
+  state.goals.push({id:id(),title:val("gTitle")||"Untitled Goal",category:val("gCat"),date:val("gDate"),priority:val("gPriority"),progress:Math.max(0,Math.min(100,Number(val("gProgress")||0)))});
+  closeModal(); save(); toast("Goal saved");
+}
+function deleteGoal(idv){ state.goals = state.goals.filter(g=>g.id!==idv); save(); }
+
+function renderBody(){
+  document.getElementById("bodyLog").innerHTML = state.body.slice(-7).reverse().map(b=>`
+    <div class="task">
+      <div class="check" style="color:${b.gym==='yes'?'var(--good)':'var(--muted2)'}">●</div>
+      <div class="task-main">
+        <div class="task-title">${esc(b.date)} — ${b.weight||"—"}kg</div>
+        <div class="task-sub">Sleep ${b.sleep||"—"}h • Gym ${b.gym==="yes"?"yes":"no"} • Recovery ${b.recovery||"—"}%</div>
+      </div>
+    </div>
+  `).join("") || `<div class="empty">No body entries yet.</div>`;
+}
+function addBodyEntry(){
+  state.body.push({date:todayKey(),weight:val("bodyWeight"),sleep:val("sleepHours"),gym:val("gymDone"),recovery:val("recoveryScore")});
+  ["bodyWeight","sleepHours","recoveryScore"].forEach(id=>document.getElementById(id).value="");
+  save(); toast("Body entry saved");
+}
+
+function renderMoney(){
+  const debt = state.debts.reduce((s,d)=>s+Number(d.balance||0),0);
+  const min = state.debts.reduce((s,d)=>s+Number(d.min||0),0);
+  document.getElementById("totalDebt").textContent = money(debt);
+  document.getElementById("totalMin").textContent = money(min);
+  document.getElementById("debtList").innerHTML = state.debts.map(d=>`
+    <div class="card">
+      <div class="day-top">
+        <div><h3 style="margin:0">${esc(d.name)}</h3><p class="muted" style="margin:5px 0 0">${money(d.balance)} • ${money(d.min)}/mo • ${d.rate||0}%</p></div>
+        <button class="smallbtn" onclick="deleteDebt('${d.id}')">Delete</button>
+      </div>
+    </div>
+  `).join("") || `<div class="empty">No debts added.</div>`;
+  const s = state.savings;
+  document.getElementById("savingsName").value = s.name || "";
+  document.getElementById("savingsCurrent").value = s.current || "";
+  document.getElementById("savingsTarget").value = s.target || "";
+  const pct = s.target ? Math.min(100,Math.round(Number(s.current||0)/Number(s.target)*100)) : 0;
+  document.getElementById("savingsPct").textContent = pct+"%";
+  document.getElementById("savingsBar").style.width = pct+"%";
+}
+function openDebtModal(){
+  sheet(`
+    <h2>Add Debt</h2>
+    <div class="form">
+      <input id="dName" placeholder="Debt name"/>
+      <input id="dBal" type="number" inputmode="decimal" placeholder="Balance"/>
+      <input id="dMin" type="number" inputmode="decimal" placeholder="Minimum monthly payment"/>
+      <input id="dRate" type="number" inputmode="decimal" placeholder="Interest rate %"/>
+      <button class="primary" onclick="addDebt()">Save Debt</button>
+      <button class="ghost" onclick="closeModal()">Cancel</button>
+    </div>
+  `);
+}
+function addDebt(){
+  state.debts.push({id:id(),name:val("dName")||"Debt",balance:Number(val("dBal")||0),min:Number(val("dMin")||0),rate:Number(val("dRate")||0)});
+  closeModal(); save(); toast("Debt saved");
+}
+function deleteDebt(idv){ state.debts = state.debts.filter(d=>d.id!==idv); save(); }
+function saveSavings(){
+  state.savings = {name:val("savingsName"),current:Number(val("savingsCurrent")||0),target:Number(val("savingsTarget")||0)};
+  save(); toast("Savings saved");
+}
+
+function renderAchievements(){
+  updateStats();
+  const avgs = [];
+  for(let i=0;i<7;i++){ const d=new Date(); d.setDate(d.getDate()-i); avgs.push(completionForDate(d.toISOString().slice(0,10))); }
+  const avg = Math.round(avgs.reduce((a,b)=>a+b,0)/7);
+  document.getElementById("bestStreak").textContent = state.stats.bestStreak || 0;
+  document.getElementById("perfectDays").textContent = state.stats.perfectDays || 0;
+  document.getElementById("totalCompleted").textContent = state.stats.totalCompleted || 0;
+  document.getElementById("weeklyAvg").textContent = avg+"%";
+  const streak = state.stats.currentStreak || 0;
+  const badgeData = [[3,"⚡","3-Day Spark"],[7,"🔥","7-Day Fire"],[14,"🛡️","14-Day Discipline"],[30,"🏆","30-Day Machine"]];
+  document.getElementById("badges").innerHTML = badgeData.map(([n,e,t])=>`
+    <div class="badge ${streak>=n?'unlocked':''}"><div class="emoji">${e}</div><b>${t}</b><span>${streak>=n?'Unlocked':'Reach '+n+' days'}</span></div>
+  `).join("");
+}
+
+function renderSettings(){
+  document.getElementById("settingsName").value = state.brand.name;
+  document.getElementById("settingsTag").value = state.brand.tagline;
+}
+function saveBrand(){
+  state.brand.name = val("settingsName") || "Brendon OS";
+  state.brand.tagline = val("settingsTag") || "Run Your Life Like a System.";
+  save(); toast("Brand saved");
+}
+function exportData(){
+  const txt = JSON.stringify(state,null,2);
+  navigator.clipboard?.writeText(txt);
+  document.getElementById("importBox").value = txt;
+  toast("JSON copied");
+}
+function importData(){
+  try{
+    const next = JSON.parse(val("importBox"));
+    if(!next.weekly) throw new Error("Bad data");
+    state = next; save(); toast("Data imported");
+  }catch(e){ toast("Invalid JSON"); }
+}
+function resetAll(){
+  if(confirm("Reset all Brendon OS data on this device?")){
+    localStorage.removeItem(KEY); state=defaultState(); save(); toast("Reset complete");
+  }
+}
+
+function saveDailyWin(){ state.wins[todayKey()] = val("dailyWin"); save(); toast("Daily win saved"); }
+function openReview(){
+  const c = todayCompletion();
+  sheet(`
+    <h2>Daily Review</h2>
+    <p class="muted">Today’s routine completion: <b>${c.pct}%</b></p>
+    <div class="form">
+      <textarea id="reviewText" placeholder="What worked? What failed? What changes tomorrow?">${esc(state.reviews[todayKey()]||"")}</textarea>
+      <button class="primary" onclick="saveReview()">Save Review</button>
+      <button class="ghost" onclick="closeModal()">Cancel</button>
+    </div>
+  `);
+}
+function saveReview(){
+  state.reviews[todayKey()] = val("reviewText");
+  if(todayCompletion().pct===100 && !state.stats["perfect_"+todayKey()]){
+    state.stats.perfectDays = (state.stats.perfectDays||0)+1;
+    state.stats["perfect_"+todayKey()] = true;
+  }
+  closeModal(); save(); toast("Review saved");
+}
+
+function val(id){return document.getElementById(id)?.value || ""}
+function sheet(html){ document.getElementById("sheet").innerHTML = html; document.getElementById("modal").classList.add("open"); }
+function closeModal(){ document.getElementById("modal").classList.remove("open"); }
+document.getElementById("modal").addEventListener("click",e=>{ if(e.target.id==="modal") closeModal(); });
+function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1500); }
+
+function showView(idv, btn){
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  document.getElementById(idv).classList.add("active");
+  document.querySelectorAll(".navbtn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  document.querySelector("main").scrollTop = 0;
+  renderAll();
+}
+function renderBrand(){
+  document.getElementById("brandName").textContent = state.brand.name;
+  document.getElementById("brandTag").textContent = state.brand.tagline;
+  document.getElementById("datePill").textContent = new Date().toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"});
+}
+function renderAll(){
+  renderBrand(); renderDashboard(); renderRoutine(); renderGoals(); renderBody(); renderMoney(); renderAchievements(); renderSettings();
+}
+renderAll();
+
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+}
+</script>
+</body>
+</html>
