@@ -6,9 +6,12 @@
   <meta name="theme-color" content="#05070d"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-  <meta name="apple-mobile-web-app-title" content="Brendon OS"/>
-  <title>Brendon OS</title>
+  <meta name="apple-mobile-web-app-title" content="Execute Your Life"/>
+  <meta name="description" content="Accountability system for routines, goals, money, body, and daily execution."/>
+  <title>Execute Your Life</title>
   <link rel="manifest" href="./manifest.json"/>
+  <link rel="icon" href="/icons/icon-192.png" type="image/png" sizes="192x192"/>
+  <link rel="apple-touch-icon" href="/icons/icon-192.png"/>
   <style>
     :root{
       --bg:#05070d;
@@ -213,7 +216,7 @@
 <div class="app">
   <header class="topbar">
     <div class="brand">
-      <h1 id="brandName">Brendon OS</h1>
+      <h1 id="brandName">Execute Your Life</h1>
       <p id="brandTag">Run Your Life Like a System.</p>
     </div>
     <div class="pill" id="datePill">Today</div>
@@ -406,7 +409,7 @@ const money = n => "$" + Number(n || 0).toLocaleString(undefined,{maximumFractio
 
 function defaultState(){
   return {
-    brand:{name:"Brendon OS",tagline:"Run Your Life Like a System."},
+    brand:{name:"Execute Your Life",tagline:"Run Your Life Like a System."},
     weekly:[
       {day:"Monday",type:"Weekly Reset Day",focus:"Organise week, money review, clean space, set top goals.",wake:"06:30",sleep:"22:00",checklist:["Make bed and clean space","Review money and bills","Set top 3 priorities","Plan gym/work blocks","Complete night review"],nonNeg:["No impulse spending","Clean room reset","Plan the week"],reminders:["08:00 Weekly setup","12:30 Money check","20:00 Daily review"],recovery:"Hydrate, stretch, early sleep.",moneyTask:"Review bills, debts, and this week’s income.",bodyTask:"Light gym or recovery walk."},
       {day:"Tuesday",type:"Build Day",focus:"Skill building, income tasks, gym.",wake:"06:30",sleep:"22:15",checklist:["Morning reset","Skill block 45 min","Income action","Gym completed","Night review"],nonNeg:["Skill block","Gym","One income action"],reminders:["07:00 Start system","13:00 Income action","20:30 Review"],recovery:"Protein, water, limit scrolling.",moneyTask:"Find or complete one paid task.",bodyTask:"Strength session."},
@@ -432,8 +435,29 @@ function defaultState(){
 }
 
 function id(){return Math.random().toString(36).slice(2,10)}
+function validateImportedState(raw){
+  if(!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("Bad data");
+  if(!Array.isArray(raw.weekly) || !raw.weekly.length) throw new Error("Bad weekly");
+  const base = defaultState();
+  return {
+    ...base,
+    brand: { ...base.brand, ...(raw.brand && typeof raw.brand === "object" ? raw.brand : {}) },
+    weekly: raw.weekly,
+    taskStatus: raw.taskStatus && typeof raw.taskStatus === "object" ? raw.taskStatus : {},
+    wins: raw.wins && typeof raw.wins === "object" ? raw.wins : {},
+    reviews: raw.reviews && typeof raw.reviews === "object" ? raw.reviews : {},
+    goals: Array.isArray(raw.goals) ? raw.goals : [],
+    body: Array.isArray(raw.body) ? raw.body : [],
+    debts: Array.isArray(raw.debts) ? raw.debts : base.debts,
+    savings: raw.savings && typeof raw.savings === "object" ? { ...base.savings, ...raw.savings } : base.savings,
+    stats: raw.stats && typeof raw.stats === "object" ? { ...base.stats, ...raw.stats } : base.stats,
+  };
+}
 function load(){
-  try { return JSON.parse(localStorage.getItem(KEY)) || defaultState(); }
+  try {
+    const raw = JSON.parse(localStorage.getItem(KEY));
+    return raw ? validateImportedState(raw) : defaultState();
+  }
   catch(e){ return defaultState(); }
 }
 let state = load();
@@ -674,7 +698,7 @@ function renderSettings(){
   document.getElementById("settingsTag").value = state.brand.tagline;
 }
 function saveBrand(){
-  state.brand.name = val("settingsName") || "Brendon OS";
+  state.brand.name = val("settingsName") || "Execute Your Life";
   state.brand.tagline = val("settingsTag") || "Run Your Life Like a System.";
   save(); toast("Brand saved");
 }
@@ -686,10 +710,9 @@ function exportData(){
 }
 function importData(){
   try{
-    const next = JSON.parse(val("importBox"));
-    if(!next.weekly) throw new Error("Bad data");
+    const next = validateImportedState(JSON.parse(val("importBox")));
     state = next; save(); toast("Data imported");
-  }catch(e){ toast("Invalid JSON"); }
+  }catch(e){ toast("Invalid or unsupported backup"); }
 }
 function resetAll(){
   if(confirm("Reset all Brendon OS data on this device?")){
